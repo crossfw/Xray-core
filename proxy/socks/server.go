@@ -40,6 +40,27 @@ func NewServer(ctx context.Context, config *ServerConfig) (*Server, error) {
 	return s, nil
 }
 
+func (s *Server) AddUser(ctx context.Context, u *protocol.MemoryUser) error {
+	if u != nil && u.Account != nil {
+		// 使用类型断言来检查u.Account是否是*socks.Account类型
+		if account, ok := u.Account.(*Account); ok {
+			password := account.Password
+			s.config.Accounts[u.Email] = password
+			fmt.Println(password)
+		} else {
+			newError("failed to clear deadline")
+		}
+	}
+
+	return nil
+}
+
+// RemoveUser implements proxy.UserManager.RemoveUser().
+func (s *Server) RemoveUser(ctx context.Context, e string) error {
+	delete(s.config.Accounts, e)
+	return nil
+}
+
 func (s *Server) policy() policy.Session {
 	config := s.config
 	p := s.policyManager.ForLevel(config.UserLevel)
